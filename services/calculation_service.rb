@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative './product_discount_calculation_service'
+require_relative './applying_product_promotion_service'
 
 class CalculationService
   attr_accessor :products
@@ -24,7 +24,7 @@ class CalculationService
   end
 
   def calculate_products_discount_amount
-    product_discount_service = ProductDiscountCalculationService.new(products: @products)
+    product_discount_service = ApplyingProductPromotionService.new(products: @products)
     product_discount_service.perform
     @discount_amount += product_discount_service.discount_amount
   end
