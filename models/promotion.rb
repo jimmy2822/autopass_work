@@ -1,12 +1,16 @@
 # frozen_string_literal: true
 
 class Promotion
-  attr_accessor :id, :name, :code, :type
+  attr_accessor :id, :name, :code, :promotion_target_type, :quantity,
+                :options
 
-  def initialize(id:, name:, code:, type:)
+  def initialize(id:, name:, code:, promotion_target_type:,
+                 quantity: nil, options: {})
     @id = id
     @name = name
     @code = code
-    @type = type
+    @promotion_target_type = promotion_target_type
+    @quantity = quantity
+    @options = options
   end
 end
