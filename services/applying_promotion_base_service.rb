@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative '../models/promotion'
+require 'logger'
 
 class ApplyingPromotionBaseService
   attr_accessor :products
@@ -14,6 +15,7 @@ class ApplyingPromotionBaseService
     @promotions = []
     @applied_promotions = []
     @promotion_free_products = []
+    @logger = Logger.new($stdout)
   end
 
   def perform
@@ -46,8 +48,8 @@ class ApplyingPromotionBaseService
       @applied_promotions << promotion
       @promotion_free_products.concat(retrieve_promotion_free_products(promotion)) if free_product_promotion?(promotion)
       @discount_amount += promotion_service.discount_amount
-    rescue NameError
-      puts(promotion.name, 'Promotion Logic Not Implemented Yet')
+    rescue NameError => e
+      @logger.warn("Applying Promotion: #{promotion.name} error. reason: #{e.message}")
       next
     end
   end
