@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative './applying_product_promotion_service'
+require_relative './applying_order_promotion_service'
 
 class CalculationService
   attr_accessor :products
@@ -15,6 +16,7 @@ class CalculationService
   def perform
     calculate_origin_amount
     calculate_products_discount_amount
+    calculate_order_discount_amount
     calculate_result_amount
   end
 
@@ -25,10 +27,19 @@ class CalculationService
   end
 
   def calculate_products_discount_amount
-    product_discount_service = ApplyingProductPromotionService.new(products: @products)
-    product_discount_service.perform
-    @discount_amount += product_discount_service.discount_amount
-    @applied_promotions.concat(product_discount_service.applied_promotions)
+    applying_product_promotion_service = ApplyingProductPromotionService.new(products: @products)
+    return unless applying_product_promotion_service.perform
+
+    @discount_amount += applying_product_promotion_service.discount_amount
+    @applied_promotions.concat(applying_product_promotion_service.applied_promotions)
+  end
+
+  def calculate_order_discount_amount
+    applying_order_promotion_service = ApplyingOrderPromotionService.new(products: @products)
+    return unless applying_order_promotion_service.perform
+
+    @discount_amount += applying_order_promotion_service.discount_amount
+    @applied_promotions.concat(applying_order_promotion_service.applied_promotions)
   end
 
   def calculate_result_amount
