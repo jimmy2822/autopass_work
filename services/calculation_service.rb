@@ -5,12 +5,14 @@ require_relative './applying_order_promotion_service'
 
 class CalculationService
   attr_accessor :products
-  attr_reader :origin_amount, :discount_amount, :result_amount, :applied_promotions
+  attr_reader :origin_amount, :discount_amount, :result_amount,
+              :applied_promotions, :promotion_free_products
 
   def initialize(products: [])
     @products = products
     @discount_amount = 0
     @applied_promotions = []
+    @promotion_free_products = []
   end
 
   def perform
@@ -32,6 +34,7 @@ class CalculationService
 
     @discount_amount += applying_product_promotion_service.discount_amount
     @applied_promotions.concat(applying_product_promotion_service.applied_promotions)
+    @promotion_free_products.concat(applying_product_promotion_service.promotion_free_products)
   end
 
   def calculate_order_discount_amount
@@ -40,6 +43,7 @@ class CalculationService
 
     @discount_amount += applying_order_promotion_service.discount_amount
     @applied_promotions.concat(applying_order_promotion_service.applied_promotions)
+    @promotion_free_products.concat(applying_order_promotion_service.promotion_free_products)
   end
 
   def calculate_result_amount

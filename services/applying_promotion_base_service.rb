@@ -4,7 +4,8 @@ require_relative '../models/promotion'
 
 class ApplyingPromotionBaseService
   attr_accessor :products
-  attr_reader :discount_amount, :result_amount, :promotions, :applied_promotions
+  attr_reader :discount_amount, :result_amount, :promotions,
+              :applied_promotions, :promotion_free_products
 
   def initialize(products:)
     @discount_amount = 0
@@ -12,6 +13,7 @@ class ApplyingPromotionBaseService
     @products = products
     @promotions = []
     @applied_promotions = []
+    @promotion_free_products = []
   end
 
   def perform
@@ -42,10 +44,23 @@ class ApplyingPromotionBaseService
       next unless promotion_service.perform
 
       @applied_promotions << promotion
+      @promotion_free_products.concat(retrieve_promotion_free_products(promotion)) if free_product_promotion?(promotion)
       @discount_amount += promotion_service.discount_amount
-    rescue => e
-      puts(promotion.name, 'Applying error with message: ', e.message)
+    rescue NameError
+      puts(promotion.name, 'Promotion Logic Not Implemented Yet')
       next
     end
+  end
+
+  def retrieve_promotion_free_products(promotion)
+    free_products = []
+    promotion.options[:free_product_quantity].times do
+      free_products << Product.new(id: promotion.options[:free_product_id], name: 'Free Promotion Product', price: 0)
+    end
+    free_products
+  end
+
+  def free_product_promotion?(promotion)
+    promotion.options.keys.include?(:free_product_id)
   end
 end
