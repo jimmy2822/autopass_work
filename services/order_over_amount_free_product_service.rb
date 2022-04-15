@@ -4,9 +4,9 @@ class OrderOverAmountFreeProductService
   attr_accessor :products
   attr_reader :discount_amount
 
-  def initialize(products:, options:)
+  def initialize(products:, promotion:)
     @products = products
-    @options = options
+    @promotion = promotion
   end
 
   def perform
@@ -19,7 +19,7 @@ class OrderOverAmountFreeProductService
   private
 
   def qualified_amount?
-    origin_amount >= @options[:over_amount]
+    origin_amount >= @promotion.options[:over_amount]
   end
 
   def origin_amount

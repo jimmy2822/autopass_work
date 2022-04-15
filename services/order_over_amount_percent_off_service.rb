@@ -4,9 +4,9 @@ class OrderOverAmountPercentOffService
   attr_accessor :products
   attr_reader :discount_amount
 
-  def initialize(products:, options:)
+  def initialize(products:, promotion:)
     @products = products
-    @options = options
+    @promotion = promotion
   end
 
   def perform
@@ -19,7 +19,7 @@ class OrderOverAmountPercentOffService
   private
 
   def qualified_amount?
-    origin_amount >= @options[:over_amount]
+    origin_amount >= @promotion.options[:over_amount]
   end
 
   def origin_amount
@@ -27,6 +27,6 @@ class OrderOverAmountPercentOffService
   end
 
   def calculate_discount_amount
-    @discount_amount = @origin_amount - (@origin_amount * (1 - (@options[:percent_off].to_f / 100)))
+    @discount_amount = @origin_amount - (@origin_amount * (1 - (@promotion.options[:percent_off].to_f / 100)))
   end
 end

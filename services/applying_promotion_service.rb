@@ -1,31 +1,31 @@
 # frozen_string_literal: true
 
-require_relative '../models/promotion'
 require 'logger'
 
-class ApplyingPromotionBaseService
+require_relative '../models/promotion'
+require_relative './multiple_products_promotion_service'
+require_relative './order_over_amount_percent_off_service'
+require_relative './order_over_amount_free_product_service'
+require_relative './order_over_amount_discount_amount_service'
+
+class ApplyingPromotionService
   attr_accessor :products
   attr_reader :discount_amount, :result_amount, :promotions,
               :applied_promotions, :promotion_free_products
 
-  def initialize(products:)
+  def initialize(products:, promotions:)
     @discount_amount = 0
     @result_amount = 0
     @products = products
-    @promotions = []
+    @promotions = promotions
     @applied_promotions = []
     @promotion_free_products = []
     @logger = Logger.new($stdout)
   end
 
   def perform
-    retrieve_promotions
     apply_promotions
     calculate_result_amount
-  end
-
-  def retrieve_promotions
-    raise NotImplementedError
   end
 
   private
@@ -42,7 +42,7 @@ class ApplyingPromotionBaseService
   def apply_promotions
     @promotions.each do |promotion|
       promotion_service = get_promotion_service_class(promotion.code)
-                          .new(products: @products, options: promotion.options)
+                          .new(products: @products, promotion: promotion)
       next unless promotion_service.perform
 
       @applied_promotions << promotion

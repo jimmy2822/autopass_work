@@ -4,9 +4,9 @@ class MultipleProductsPromotionService
   attr_accessor :products
   attr_reader :discount_amount
 
-  def initialize(products:, options:)
+  def initialize(products:, promotion:)
     @products = products
-    @options = options
+    @promotion = promotion
     @qualified_products = []
   end
 
@@ -30,14 +30,14 @@ class MultipleProductsPromotionService
   end
 
   def promotion_product?(product_id)
-    @options[:promotion_product_ids].include?(product_id)
+    @promotion.options[:promotion_product_ids].include?(product_id)
   end
 
   def qualified_quantity?(product_id)
-    @products.select { |product| product.id == product_id }.count >= @options[:quantity]
+    @products.select { |product| product.id == product_id }.count >= @promotion.options[:quantity]
   end
 
   def calculate_discount_amount
-    @discount_amount = @qualified_products.map(&:id).uniq.count * @options[:discount_amount]
+    @discount_amount = @qualified_products.map(&:id).uniq.count * @promotion.options[:discount_amount]
   end
 end
