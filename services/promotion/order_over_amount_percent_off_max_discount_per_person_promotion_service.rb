@@ -22,13 +22,11 @@ class OrderOverAmountPercentOffMaxDiscountPerPersonPromotionService < BasePromot
   end
 
   def qualified_per_person_max_amount?
-    return true if promotion_logs.size.zero?
-
     user_applied_promotion_logs.sum(&:discount_amount) + present_discount_amount <= @promotion.options[:max_discount_amount]
   end
 
   def present_discount_amount
-    @origin_amount * (1 - (@promotion.options[:percent_off].to_f / 100))
+    @origin_amount - (@origin_amount * (1 - (@promotion.options[:percent_off].to_f / 100)))
   end
 
   def origin_amount
@@ -36,7 +34,7 @@ class OrderOverAmountPercentOffMaxDiscountPerPersonPromotionService < BasePromot
   end
 
   def calculate_discount_amount
-    @discount_amount = @origin_amount - present_discount_amount
+    @discount_amount = present_discount_amount
   end
 
   def user_applied_promotion_logs

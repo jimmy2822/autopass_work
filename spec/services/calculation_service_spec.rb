@@ -4,6 +4,7 @@ require 'faker'
 require_relative '../../models/order'
 require_relative '../../services/calculation_service'
 require_relative '../../models/product'
+require_relative '../../models/promotion_log'
 
 RSpec.describe CalculationService do
   let(:user) { User.new(id: 1, name: 'Jimmy') }
@@ -177,7 +178,7 @@ RSpec.describe CalculationService do
         [
           Promotion.new(id: 5, name: '訂單滿 3000 元可以折 10%，每人總共最高折 500 元', code: 'order_over_amount_percent_off_max_discount_per_person',
                         promotion_target_type: 'ORDER',
-                        options: { over_amount: 3000, percent_off: 10, max_discount_amount: 2500  })
+                        options: { over_amount: 3000, percent_off: 10, max_discount_amount: 2500 })
         ]
       end
       let(:product_a) { Product.new(id: 1, name: Faker::Commerce.product_name, price: 6000) }
@@ -194,6 +195,23 @@ RSpec.describe CalculationService do
 
       it 'result_amount should be' do
         expect(subject.result_amount).to eq(12_600)
+      end
+
+      context 'when user with promotion logs over max discount amount 500' do
+        let(:promotion_logs) do
+          [
+            PromotionLog.new(id: 1, user_id: 1, promotion_id: 5, discount_amount: 1300),
+            PromotionLog.new(id: 2, user_id: 1, promotion_id: 5, discount_amount: 1200)
+          ]
+        end
+
+        it 'promotion is not qualified of applying, discount amount should be zero' do
+          expect(subject.discount_amount).to eq(0)
+        end
+
+        it 'there is no applied promotion ' do
+          expect(subject.applied_promotions.size).to eq(0)
+        end
       end
     end
   end
