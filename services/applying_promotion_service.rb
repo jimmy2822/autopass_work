@@ -8,6 +8,7 @@ require_relative './promotion/order_over_amount_percent_off_promotion_service'
 require_relative './promotion/order_over_amount_free_product_promotion_service'
 require_relative './promotion/order_over_amount_discount_amount_promotion_service'
 require_relative './promotion/order_over_amount_percent_off_max_discount_per_person_promotion_service'
+require_relative './promotion/order_over_amount_discount_amount_monthly_max_promotion_service'
 
 class ApplyingPromotionService
   attr_reader :discount_amount, :result_amount, :promotions,

@@ -181,9 +181,12 @@ RSpec.describe CalculationService do
                         options: { over_amount: 3000, percent_off: 10, max_discount_amount: 2500 })
         ]
       end
-      let(:product_a) { Product.new(id: 1, name: Faker::Commerce.product_name, price: 6000) }
-      let(:product_b) { Product.new(id: 2, name: Faker::Commerce.product_name, price: 8000) }
-      let(:products) { [product_a, product_b] }
+      let(:products) do
+        [
+          Product.new(id: 1, name: Faker::Commerce.product_name, price: 6000),
+          Product.new(id: 2, name: Faker::Commerce.product_name, price: 8000)
+        ]
+      end
 
       it 'origin_amount is equal to products price sum' do
         expect(subject.origin_amount).to eq(14_000)
@@ -211,6 +214,67 @@ RSpec.describe CalculationService do
 
         it 'there is no applied promotion ' do
           expect(subject.applied_promotions.size).to eq(0)
+        end
+      end
+    end
+
+    describe 'when order is qualified to apply order over amount discount amount monthly max promotion' do
+      let(:promotions) do
+        [
+          Promotion.new(id: 6, name: '訂單滿 3000 元可以折 500 元每月全站最高折 10000 元', code: 'order_over_amount_discount_amount_monthly_max',
+                        promotion_target_type: 'ORDER',
+                        options: { over_amount: 3000, discount_amount: 500, monthly_max_amount: 2000 })
+        ]
+      end
+      let(:products) { [Product.new(id: 1, name: Faker::Commerce.product_name, price: 5000)] }
+
+      it 'origin_amount is equal to products price sum' do
+        expect(subject.origin_amount).to eq(5000)
+      end
+
+      it 'discount amount should come from this promotion' do
+        expect(subject.discount_amount).to eq(500)
+      end
+
+      it 'result_amount should be' do
+        expect(subject.result_amount).to eq(4500)
+      end
+
+      context 'when promotion logs over max discount amount 2000' do
+        let(:promotion_logs) do
+          [
+            PromotionLog.new(id: 1, user_id: 1, promotion_id: 6, discount_amount: 500, created_at: DateTime.new(2022, 4, 5)),
+            PromotionLog.new(id: 2, user_id: 2, promotion_id: 6, discount_amount: 500, created_at: DateTime.new(2022, 4, 10)),
+            PromotionLog.new(id: 3, user_id: 3, promotion_id: 6, discount_amount: 500, created_at: DateTime.new(2022, 4, 22)),
+            PromotionLog.new(id: 4, user_id: 4, promotion_id: 6, discount_amount: 500, created_at: DateTime.new(2022, 4, 7))
+          ]
+        end
+
+        it 'promotion is not qualified of applying, discount amount should be zero' do
+          expect(subject.discount_amount).to eq(0)
+        end
+
+        it 'there is no applied promotion ' do
+          expect(subject.applied_promotions.size).to eq(0)
+        end
+      end
+
+      context 'when promotion logs over max discount amount 2000 but not in this month' do
+        let(:promotion_logs) do
+          [
+            PromotionLog.new(id: 1, user_id: 1, promotion_id: 6, discount_amount: 500, created_at: DateTime.new(2022, 1, 5)),
+            PromotionLog.new(id: 2, user_id: 2, promotion_id: 6, discount_amount: 500, created_at: DateTime.new(2022, 1, 10)),
+            PromotionLog.new(id: 3, user_id: 3, promotion_id: 6, discount_amount: 500, created_at: DateTime.new(2022, 1, 22)),
+            PromotionLog.new(id: 4, user_id: 4, promotion_id: 6, discount_amount: 500, created_at: DateTime.new(2022, 1, 7))
+          ]
+        end
+
+        it 'promotion is qualified of applying, discount amount should 500' do
+          expect(subject.discount_amount).to eq(500)
+        end
+
+        it 'there is applied promotion ' do
+          expect(subject.applied_promotions.size).to eq(1)
         end
       end
     end

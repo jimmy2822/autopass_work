@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'date'
+
 class PromotionLog
   attr_accessor :id, :user_id, :promotion_id, :discount_amount, :created_at
 
