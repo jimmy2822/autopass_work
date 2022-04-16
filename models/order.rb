@@ -1,13 +1,20 @@
 # frozen_string_literal: true
 
 class Order
-  attr_accessor :id, :user_id, :origin_price_total, :discount_total
+  attr_accessor :discount_amount
+  attr_reader :id, :user_id, :products
 
-  def initialize(id:, user_id:, origin_amount:, discount_amount:, result_amount:)
+  def initialize(id:, user_id:, products:)
     @id = id
     @user_id = user_id
-    @origin_amount = origin_amount
-    @discount_amount = discount_amount
-    @result_amount = result_amount
+    @products = products
+  end
+
+  def origin_amount
+    @products.sum(&:price)
+  end
+
+  def result_amount
+    @origin_amount - @discount_amount
   end
 end

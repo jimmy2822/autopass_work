@@ -3,21 +3,22 @@
 require 'logger'
 
 require_relative '../models/promotion'
-require_relative './multiple_products_promotion_service'
-require_relative './order_over_amount_percent_off_service'
-require_relative './order_over_amount_free_product_service'
-require_relative './order_over_amount_discount_amount_service'
+require_relative './promotion/multiple_products_discount_amount_promotion_service'
+require_relative './promotion/order_over_amount_percent_off_promotion_service'
+require_relative './promotion/order_over_amount_free_product_promotion_service'
+require_relative './promotion/order_over_amount_discount_amount_promotion_service'
+require_relative './promotion/order_over_amount_percent_off_max_discount_per_person_promotion_service'
 
 class ApplyingPromotionService
-  attr_accessor :products
   attr_reader :discount_amount, :result_amount, :promotions,
-              :applied_promotions, :promotion_free_products
+              :applied_promotions, :promotion_free_products, :products
 
-  def initialize(products:, promotions:)
+  def initialize(order:, promotions:, promotion_logs:)
+    @order = order
+    @promotions = promotions
+    @promotion_logs = promotion_logs
     @discount_amount = 0
     @result_amount = 0
-    @products = products
-    @promotions = promotions
     @applied_promotions = []
     @promotion_free_products = []
     @logger = Logger.new($stdout)
@@ -31,18 +32,19 @@ class ApplyingPromotionService
   private
 
   def get_promotion_service_class(code)
-    service_name = code.split('_').collect!(&:capitalize).join + 'Service'
+    service_name = code.split('_').collect!(&:capitalize).join + 'PromotionService'
     Object.const_get(service_name)
   end
 
   def calculate_result_amount
-    @products.map(&:price).sum - @discount_amount
+    @order.origin_amount - @discount_amount
   end
 
   def apply_promotions
     @promotions.each do |promotion|
       promotion_service = get_promotion_service_class(promotion.code)
-                          .new(products: @products, promotion: promotion)
+                          .new(user_id: @order.user_id, products: @order.products,
+                               promotion: promotion, promotion_logs: @promotion_logs)
       next unless promotion_service.perform
 
       @applied_promotions << promotion

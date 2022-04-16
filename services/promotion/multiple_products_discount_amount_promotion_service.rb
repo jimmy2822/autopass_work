@@ -1,12 +1,10 @@
 # frozen_string_literal: true
 
-class MultipleProductsPromotionService
-  attr_accessor :products
-  attr_reader :discount_amount
+require_relative './base_promotion_service'
 
-  def initialize(products:, promotion:)
-    @products = products
-    @promotion = promotion
+class MultipleProductsDiscountAmountPromotionService < BasePromotionService
+  def initialize(user_id:, products:, promotion:, promotion_logs:)
+    super(user_id: user_id, products: products, promotion: promotion, promotion_logs: promotion_logs)
     @qualified_products = []
   end
 
