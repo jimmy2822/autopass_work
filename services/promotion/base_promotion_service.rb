@@ -9,4 +9,8 @@ class BasePromotionService
     @promotion = promotion
     @promotion_logs = promotion_logs
   end
+
+  def perform
+    raise NotImplementedError
+  end
 end
